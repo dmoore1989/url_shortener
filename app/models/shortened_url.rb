@@ -18,12 +18,16 @@ class ShortenedUrl < ActiveRecord::Base
   validate :user_cannot_submit_over_5_in_1_min
   validate :premium_access
 
-  belongs_to(
-    :submitter,
+  def self.prune(n)
+    prune_list = ShortenedUrl.where('updated_at < ?', n.minutes.ago)
+
+    prune_list.each { |el| ShortenedUrl.destroy(el) }
+  end
+
+  belongs_to :submitter,
     :class_name => 'User',
     :foreign_key => 'user_id',
     :primary_key => 'id'
-  )
 
   has_many(
     :visits,
@@ -63,7 +67,11 @@ class ShortenedUrl < ActiveRecord::Base
   def self.create_for_user_and_long_url!(user, long_url)
     short_url = self.random_code
 
-    ShortenedUrl.create!(:long_url => long_url, :short_url => short_url, :user_id => user.id)
+    ShortenedUrl.create!(
+      :long_url => long_url,
+      :short_url => short_url,
+      :user_id => user.id
+    )
   end
 
   def num_clicks
