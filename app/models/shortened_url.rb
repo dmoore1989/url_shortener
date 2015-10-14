@@ -36,4 +36,31 @@ class ShortenedUrl < ActiveRecord::Base
     :primary_key => 'id'
   )
 
+  has_many(
+    :visits,
+    :class_name => 'Visit',
+    :foreign_key => :shortened_url_id,
+    :primary_key => :id
+    )
+
+  has_many(
+    :visited_users,
+    :through => :visits,
+    :source => :visitor
+  )
+
+  def num_clicks
+    self.visits.count
+  end
+
+  def num_uniques
+    self.visits.select(:user_id).distinct.count
+  end
+
+  def num_recent_uniques # test again at 3:20, should be 0
+    visits = Visit.where('updated_at >= ?', 10.minutes.ago)
+    unique_visits = visits.select(:user_id).distinct.count
+    unique_visits
+  end
+
 end
