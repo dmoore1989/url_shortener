@@ -19,4 +19,5 @@ else
 
   find_url = ShortenedUrl.where('short_url = ?', short_url).first
   Launchy.open(find_url.long_url)
+  Visit.record_visit!(user, find_url)
 end
