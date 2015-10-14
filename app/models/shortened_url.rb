@@ -16,6 +16,7 @@ class ShortenedUrl < ActiveRecord::Base
   validates :short_url, :uniqueness => true, :presence => true
   validates_length_of :long_url, maximum: 1024
   validate :user_cannot_submit_over_5_in_1_min
+  validate :premium_access
 
   belongs_to(
     :submitter,
@@ -80,8 +81,14 @@ class ShortenedUrl < ActiveRecord::Base
   end
 
   def user_cannot_submit_over_5_in_1_min
-    visits = ShortenedUrl.where('updated_at >= ? and user_id = ?', 50.minutes.ago, submitter)
+    visits = ShortenedUrl.where('updated_at >= ? and user_id = ?', 5.minutes.ago, submitter)
     errors[:email] << "can't create more than 5 urls!" if visits.count > 5
+  end
+
+  def premium_access
+    unless submitter.premium
+      errors[:premium] << "can't create more than 5 URLs for non-premium access" if submitter.submitted_urls.count > 5
+    end
   end
 
 end

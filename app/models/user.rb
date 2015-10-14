@@ -31,4 +31,7 @@ class User < ActiveRecord::Base
     :through => :visits,
     :source => :visited_url
   )
+
+
+
 end
